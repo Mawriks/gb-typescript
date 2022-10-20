@@ -1,18 +1,27 @@
-import { renderBlock, getISODate, getLastDayOfMonth } from "./lib.js";
-export function renderSearchFormBlock(checkin = "", checkout = "") {
-    let minDate = new Date(), maxDate = new Date(), checkinDefaultDate = new Date(), checkoutDefaultDate = new Date();
+import { renderBlock, getISODate, getLastDayOfMonth } from './lib.js';
+export function getFormData(e) {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+    console.log(formData);
+}
+function search(data) {
+    console.log(data);
+}
+export function renderSearchFormBlock(checkin = '', checkout = '') {
+    const minDate = new Date(), maxDate = new Date(), checkinDefaultDate = new Date(), checkoutDefaultDate = new Date();
     maxDate.setMonth(maxDate.getMonth() + 1);
     maxDate.setDate(getLastDayOfMonth(maxDate.getFullYear(), maxDate.getMonth()));
     checkinDefaultDate.setDate(checkinDefaultDate.getDate() + 1);
     checkoutDefaultDate.setDate(checkoutDefaultDate.getDate() + 3);
-    renderBlock("search-form-block", `
-    <form>
+    renderBlock('search-form-block', `
+    <form id="form">
       <fieldset class="search-filedset">
         <div class="row">
           <div>
             <label for="city">Город</label>
-            <input id="city" type="text" disabled value="Севастополь" />
-            <input type="hidden" disabled value="59.9386,30.3141" />
+            <input id="city" name="city" type="text" disabled value="Севастополь" />
+            <input type="hidden" disabled value="44.616499, 33.525125" />
           </div>
           <!--<div class="providers">
             <label><input type="checkbox" name="provider" value="homy" checked /> Homy</label>

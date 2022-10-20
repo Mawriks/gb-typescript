@@ -1,4 +1,26 @@
 import { renderBlock } from './lib.js';
+export class User {
+    constructor(username, avatarUrl) {
+        this.username = username;
+        this.avatarUrl = avatarUrl;
+    }
+}
+export function getUserData() {
+    const userData = JSON.parse(localStorage.getItem('user'));
+    if (typeof userData === 'object' &&
+        'username' in userData &&
+        'avatarUrl' in userData) {
+        return new User(userData.username, userData.avatarUrl);
+    }
+    return 'Возможно вы не залогинены!'.toString();
+}
+export function getFavoritesAmount() {
+    const amount = JSON.parse(localStorage.getItem('favoritesAmount'));
+    if (!isNaN(Number(amount))) {
+        return Number(amount);
+    }
+    return false;
+}
 export function renderUserBlock(name, avatar, favoriteItemsAmount) {
     const favoritesCaption = favoriteItemsAmount > 0 ? favoriteItemsAmount : 'ничего нет';
     const hasFavoriteItems = favoriteItemsAmount ? true : false;
