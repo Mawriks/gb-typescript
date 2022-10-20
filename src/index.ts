@@ -41,6 +41,5 @@ window.addEventListener('DOMContentLoaded', () => {
   }
   renderSearchFormBlock();
   renderSearchStubBlock();
-  const form = document.getElementById('form');
-  form.addEventListener('submit', getFormData);
+  getFormData();
 });

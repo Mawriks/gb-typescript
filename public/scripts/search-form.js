@@ -1,9 +1,17 @@
 import { renderBlock, getISODate, getLastDayOfMonth } from './lib.js';
-export function getFormData(e) {
-    e.preventDefault();
-    const form = e.target;
-    const formData = new FormData(form);
-    console.log(formData);
+export function getFormData() {
+    const form = document.getElementById('form');
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const city = document.getElementById('city'), checkin = document.getElementById('check-in-date'), checkout = document.getElementById('check-out-date'), maxprice = document.getElementById('max-price');
+        const data = {
+            city: city.value,
+            checkin: new Date(checkin.value),
+            checkout: new Date(checkout.value),
+            maxprice: +maxprice.value,
+        };
+        search(data);
+    });
 }
 function search(data) {
     console.log(data);

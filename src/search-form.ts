@@ -7,11 +7,30 @@ interface SearchFormData {
   maxprice: number;
 }
 
-export function getFormData(e: SubmitEvent): void {
-  e.preventDefault();
-  const form = e.target as HTMLFormElement;
-  const formData: any | null = new FormData(form);
-  console.log(formData);
+export function getFormData(): void {
+  const form = document.getElementById('form') as HTMLFormElement;
+  form.addEventListener('submit', (e: SubmitEvent) => {
+    e.preventDefault();
+    const city: HTMLInputElement = document.getElementById(
+      'city'
+    ) as HTMLInputElement,
+      checkin: HTMLInputElement = document.getElementById(
+        'check-in-date'
+      ) as HTMLInputElement,
+      checkout: HTMLInputElement = document.getElementById(
+        'check-out-date'
+      ) as HTMLInputElement,
+      maxprice: HTMLInputElement = document.getElementById(
+        'max-price'
+      ) as HTMLInputElement;
+    const data: SearchFormData = {
+      city: city.value,
+      checkin: new Date(checkin.value),
+      checkout: new Date(checkout.value),
+      maxprice: +maxprice.value,
+    };
+    search(data);
+  });
 }
 
 function search(data: SearchFormData) {
