@@ -1,6 +1,20 @@
 export function renderBlock(elementId: string, html: string) {
-  const element = document.getElementById(elementId);
+  const element = document.getElementById(elementId) as HTMLElement;
   element.innerHTML = html;
+}
+
+export function dateToUnixStamp(date: Date): number {
+  return date.getTime() / 1000;
+}
+
+export function responseToJson(requestPromise: Promise<any>): Promise<any> {
+  return requestPromise
+    .then((response) => {
+      return response.text();
+    })
+    .then((response) => {
+      return JSON.parse(response);
+    });
 }
 
 export function getISODate(date: Date): string {
@@ -24,7 +38,7 @@ interface IAction {
   handler?: () => void;
 }
 
-export function renderToast(message: IMessage, action: IAction) {
+export function renderToast(message: IMessage | null, action: IAction | null) {
   let messageText = '';
 
   if (message != null) {

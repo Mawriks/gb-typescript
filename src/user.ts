@@ -10,20 +10,19 @@ export class User {
 }
 
 export function getUserData(): unknown {
-  const userData = JSON.parse(localStorage.getItem('user'));
-  if (
-    typeof userData === 'object' &&
-    'username' in userData &&
-    'avatarUrl' in userData
-  ) {
-    return new User(userData.username, userData.avatarUrl);
+  const userData: unknown = localStorage.getItem('user');
+  const data = typeof userData === 'string' ? JSON.parse(userData) : undefined;
+  if (typeof data === 'object' && 'username' in data && 'avatarUrl' in data) {
+    return new User(data.username, data.avatarUrl);
   }
 
-  return 'Возможно вы не залогинены!'.toString();
+  return 'Возможно вы не залогинены!';
 }
 
 export function getFavoritesAmount(): unknown {
-  const amount = JSON.parse(localStorage.getItem('favoritesAmount'));
+  const amountData: unknown = localStorage.getItem('favoritesAmount');
+  const amount =
+    typeof amountData === 'string' ? JSON.parse(amountData) : undefined;
   if (!isNaN(Number(amount))) {
     return Number(amount);
   }
@@ -36,8 +35,13 @@ export function renderUserBlock(
   avatar: string,
   favoriteItemsAmount?: number
 ): void {
-  const favoritesCaption =
-    favoriteItemsAmount > 0 ? favoriteItemsAmount : 'ничего нет';
+  let favoritesCaption: string | number;
+  if (favoriteItemsAmount && favoriteItemsAmount > 0) {
+    favoritesCaption = favoriteItemsAmount;
+  } else {
+    favoritesCaption = 'ничего нет';
+  }
+
   const hasFavoriteItems = favoriteItemsAmount ? true : false;
 
   renderBlock(

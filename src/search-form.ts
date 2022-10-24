@@ -1,10 +1,27 @@
-import { renderBlock, getISODate, getLastDayOfMonth } from './lib.js';
+import {
+  renderBlock,
+  getISODate,
+  getLastDayOfMonth,
+  dateToUnixStamp,
+  responseToJson,
+} from './lib.js';
+import { renderSearchResultsBlock } from './search-results.js';
 
 interface SearchFormData {
   city: string;
   checkin: Date;
   checkout: Date;
-  maxprice: number;
+  maxprice: number | null;
+  coordinates: string;
+}
+export interface Place {
+  id: number;
+  image: string;
+  name: string;
+  description: string;
+  remoteness: number;
+  bookedDates: number[];
+  price: number;
 }
 
 export function getFormData(): void {
@@ -22,19 +39,33 @@ export function getFormData(): void {
       ) as HTMLInputElement,
       maxprice: HTMLInputElement = document.getElementById(
         'max-price'
+      ) as HTMLInputElement,
+      coordinates: HTMLInputElement = document.getElementById(
+        'coordinates'
       ) as HTMLInputElement;
     const data: SearchFormData = {
       city: city.value,
       checkin: new Date(checkin.value),
       checkout: new Date(checkout.value),
-      maxprice: +maxprice.value,
+      maxprice: maxprice.value ? +maxprice.value : null,
+      coordinates: coordinates.value,
     };
-    search(data);
+    search(data).then((places: Place[]) => renderSearchResultsBlock(places));
   });
 }
 
 function search(data: SearchFormData) {
-  console.log(data);
+  let url: string =
+    'http://localhost:3030/places?' +
+    `checkInDate=${dateToUnixStamp(data.checkin)}&` +
+    `checkOutDate=${dateToUnixStamp(data.checkout)}&` +
+    `coordinates=${data.coordinates}`;
+
+  if (data.maxprice != null) {
+    url += `&maxPrice=${data.maxprice}`;
+  }
+
+  return responseToJson(fetch(url));
 }
 
 export function renderSearchFormBlock(checkin = '', checkout = ''): void {
@@ -55,8 +86,8 @@ export function renderSearchFormBlock(checkin = '', checkout = ''): void {
         <div class="row">
           <div>
             <label for="city">Город</label>
-            <input id="city" name="city" type="text" disabled value="Севастополь" />
-            <input type="hidden" disabled value="44.616499, 33.525125" />
+            <input id="city" name="city" type="text" disabled value="Санкт-Петербург" />
+            <input type="hidden" id="coordinates" name="coordinates" disabled value="59.9386,30.3141" />
           </div>
           <!--<div class="providers">
             <label><input type="checkbox" name="provider" value="homy" checked /> Homy</label>
