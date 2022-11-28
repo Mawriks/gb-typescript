@@ -1,5 +1,6 @@
 import { renderBlock } from './lib.js';
-import { Place, getFormData } from './search-form.js';
+import { Place } from './search-form.js';
+import { renderUserInfo } from './user.js';
 
 export function renderSearchStubBlock() {
   renderBlock(
@@ -23,30 +24,34 @@ export function toggleFavoriteItem(data: Place): void {
   const itemsData: unknown = localStorage.getItem('favoriteItems');
   const items =
     typeof itemsData === 'string' ? JSON.parse(itemsData) : undefined;
+  const store = {};
   if (inFavorite(data)) {
-    console.log(data);
+    const values:Favorite[] = Object.values(items);
+    const filtered:Favorite[] = values.filter(function(item:Favorite) {
+      return item.id != data.id;
+    });
+    Object.assign(store, {
+      ...filtered
+    });
   } else {
-    const store = {};
-    if (items && items.length > 0) {
-      Object.assign(store, {
-        ...items,
-        [items.length]: { id: data.id, name: data.name, image: data.image },
-      });
-    } else {
-      Object.assign(store, {
-        0: { id: data.id, name: data.name, image: data.image },
-      });
-    }
+    Object.assign(store, {
+      ...items,
+      [Object.keys(items).length]: { id: data.id, name: data.name, image: data.image },
+    });
+  }
+  if (typeof store === 'object') {
+    localStorage.setItem('favoritesAmount', String(Object.keys(store).length));
     localStorage.setItem('favoriteItems', JSON.stringify(store));
   }
-  //getFormData();
 }
+
 export function inFavorite(data: Place): boolean {
   const itemsData: unknown = localStorage.getItem('favoriteItems');
   const items =
     typeof itemsData === 'string' ? JSON.parse(itemsData) : undefined;
-  if (items && items.length > 0) {
-    return !!items.find(function (item: Favorite) {
+  if (items && Object.keys(items).length > 0) {
+    const values:Favorite[] = Object.values(items);
+    return !!values.find(function (item: Favorite) {
       return item.id == data.id;
     });
   }
@@ -80,7 +85,7 @@ export function renderSearchResultsBlock(data: Place[]): void {
           <p>${item.name}</p>
           <p class="price">${item.price}&#8381;</p>
         </div>
-        <div class="result-info--map"><i class="map-icon"></i> ${item.remoteness}км от вас</div>
+        <div class="result-info--map"><i class="map-icon"></i> ${item.remoteness?item.remoteness+'км от вас':'расстояние не известно'}</div>
         <div class="result-info--descr">${item.description}</div>
         <div class="result-info--footer">
           <div>
@@ -114,6 +119,8 @@ export function renderSearchResultsBlock(data: Place[]): void {
   document.querySelectorAll('.result .favorites').forEach((item, idx) => {
     item.addEventListener('click', function () {
       toggleFavoriteItem(data[idx]);
+      renderSearchResultsBlock(data);
+      renderUserInfo();
     });
   });
 }
