@@ -7,7 +7,7 @@ window.addEventListener('DOMContentLoaded', () => {
     'user',
     JSON.stringify({ username: 'Den Warren', avatarUrl: '/img/avatar.png' })
   );
-
+  
   renderUserInfo();
   renderSearchFormBlock();
   renderSearchStubBlock();

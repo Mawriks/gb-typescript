@@ -4,8 +4,12 @@ import {
   getLastDayOfMonth,
   dateToUnixStamp,
   responseToJson,
+  calculateDifferenceInDays
 } from './lib.js';
 import { renderSearchResultsBlock } from './search-results.js';
+import { FlatRentSdk, iFlat, iParams } from './sdk/flat-rent-sdk.js';
+
+export const flatSDK = new FlatRentSdk();
 
 interface SearchFormData {
   city: string;
@@ -15,11 +19,11 @@ interface SearchFormData {
   coordinates: string;
 }
 export interface Place {
-  id: number;
+  id: number | string;
   image: string;
   name: string;
   description: string;
-  remoteness: number;
+  remoteness?: number;
   bookedDates: number[];
   price: number;
 }
@@ -50,10 +54,34 @@ export function getFormData(): void {
       maxprice: maxprice.value ? +maxprice.value : null,
       coordinates: coordinates.value,
     };
-    search(data).then((places: Place[]) => renderSearchResultsBlock(places));
+    const sdkData:iParams = {
+      city: city.value,
+      checkInDate: new Date(checkin.value),
+      checkOutDate: new Date(checkout.value),
+      priceLimit: maxprice.value ? +maxprice.value : null
+    }
+    
+    search(data).then((places: Place[]) =>{ 
+      places = places.map((place:Place)=>{
+        place.price = place.price*calculateDifferenceInDays(data.checkin, data.checkout);
+        return place;
+      });
+      flatSDK.search(sdkData).then((sdkpl:iFlat[]) => {
+        const sdkPlaces:Place[] = sdkpl.map((flat:iFlat)=>{
+          return {
+            id: flat.id,
+            name: flat.title,
+            image: flat.photos[0],
+            description: flat.details,
+            price: flat.totalPrice,
+          } as Place;
+        });
+        places.push(...sdkPlaces);
+        renderSearchResultsBlock(places);
+      });
+    });
   });
 }
-
 function search(data: SearchFormData) {
   let url: string =
     'http://localhost:3030/places?' +

@@ -44,6 +44,7 @@ export function toggleFavoriteItem(data: Place): void {
     localStorage.setItem('favoriteItems', JSON.stringify(store));
   }
 }
+
 export function inFavorite(data: Place): boolean {
   const itemsData: unknown = localStorage.getItem('favoriteItems');
   const items =
@@ -84,7 +85,7 @@ export function renderSearchResultsBlock(data: Place[]): void {
           <p>${item.name}</p>
           <p class="price">${item.price}&#8381;</p>
         </div>
-        <div class="result-info--map"><i class="map-icon"></i> ${item.remoteness}км от вас</div>
+        <div class="result-info--map"><i class="map-icon"></i> ${item.remoteness?item.remoteness+'км от вас':'расстояние не известно'}</div>
         <div class="result-info--descr">${item.description}</div>
         <div class="result-info--footer">
           <div>

@@ -7,6 +7,13 @@ export function dateToUnixStamp(date: Date): number {
   return date.getTime() / 1000;
 }
 
+export function calculateDifferenceInDays(startDate: Date, endDate: Date): number {
+  const difference = endDate.getTime() - startDate.getTime()
+
+  return Math.floor(difference / (1000 * 60 * 60 * 24))
+}
+
+
 export function responseToJson(requestPromise: Promise<any>): Promise<any> {
   return requestPromise
     .then((response) => {
