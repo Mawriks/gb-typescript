@@ -27,26 +27,15 @@ export interface Place {
   bookedDates: number[];
   price: number;
 }
-
+type MyFormCollection = HTMLFormControlsCollection & [HTMLInputElement];
+interface FormElements extends HTMLFormElement {
+  elements: MyFormCollection;
+}
 export function getFormData(): void {
   const form = document.getElementById('form') as HTMLFormElement;
   form.addEventListener('submit', (e: SubmitEvent) => {
     e.preventDefault();
-    const city: HTMLInputElement = document.getElementById(
-      'city'
-    ) as HTMLInputElement,
-      checkin: HTMLInputElement = document.getElementById(
-        'check-in-date'
-      ) as HTMLInputElement,
-      checkout: HTMLInputElement = document.getElementById(
-        'check-out-date'
-      ) as HTMLInputElement,
-      maxprice: HTMLInputElement = document.getElementById(
-        'max-price'
-      ) as HTMLInputElement,
-      coordinates: HTMLInputElement = document.getElementById(
-        'coordinates'
-      ) as HTMLInputElement;
+    const [city, checkin, checkout, maxprice, coordinates] = (<FormElements>e?.target).elements;
     const data: SearchFormData = {
       city: city.value,
       checkin: new Date(checkin.value),
@@ -68,13 +57,13 @@ export function getFormData(): void {
       });
       flatSDK.search(sdkData).then((sdkpl:iFlat[]) => {
         const sdkPlaces:Place[] = sdkpl.map((flat:iFlat)=>{
-          return {
+          return <Place>{
             id: flat.id,
             name: flat.title,
             image: flat.photos[0],
             description: flat.details,
             price: flat.totalPrice,
-          } as Place;
+          };
         });
         places.push(...sdkPlaces);
         renderSearchResultsBlock(places);
