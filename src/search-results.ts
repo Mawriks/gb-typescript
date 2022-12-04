@@ -1,6 +1,7 @@
 import { renderBlock } from './lib.js';
-import { Place } from './search-form.js';
+import { Place, Favorite } from './app-types';
 import { renderUserInfo } from './user.js';
+import { SortingMap } from './search.js';
 
 export function renderSearchStubBlock() {
   renderBlock(
@@ -14,20 +15,14 @@ export function renderSearchStubBlock() {
   );
 }
 
-interface Favorite {
-  id: number;
-  name: string;
-  image: string;
-}
-
 export function toggleFavoriteItem(data: Place): void {
   const itemsData: unknown = localStorage.getItem('favoriteItems');
   const items =
     typeof itemsData === 'string' ? JSON.parse(itemsData) : undefined;
   const store = {};
   if (inFavorite(data)) {
-    const values:Favorite[] = Object.values(items);
-    const filtered:Favorite[] = values.filter(function(item:Favorite) {
+    const values: Favorite[] = Object.values(items);
+    const filtered: Favorite[] = values.filter(function (item: Favorite) {
       return item.id != data.id;
     });
     Object.assign(store, {
@@ -50,7 +45,7 @@ export function inFavorite(data: Place): boolean {
   const items =
     typeof itemsData === 'string' ? JSON.parse(itemsData) : undefined;
   if (items && Object.keys(items).length > 0) {
-    const values:Favorite[] = Object.values(items);
+    const values: Favorite[] = Object.values(items);
     return !!values.find(function (item: Favorite) {
       return item.id == data.id;
     });
@@ -85,7 +80,7 @@ export function renderSearchResultsBlock(data: Place[]): void {
           <p>${item.name}</p>
           <p class="price">${item.price}&#8381;</p>
         </div>
-        <div class="result-info--map"><i class="map-icon"></i> ${item.remoteness?item.remoteness+'км от вас':'расстояние не известно'}</div>
+        <div class="result-info--map"><i class="map-icon"></i> ${item.remoteness ? item.remoteness + 'км от вас' : 'расстояние не известно'}</div>
         <div class="result-info--descr">${item.description}</div>
         <div class="result-info--footer">
           <div>
@@ -97,6 +92,17 @@ export function renderSearchResultsBlock(data: Place[]): void {
   </li>`;
   });
 
+  const sorting = localStorage.getItem('sorting');
+  const sortKeys = Object.keys(SortingMap);
+
+  let sortTemplate = '<select>';
+
+  for (const key of sortKeys) {
+    console.log(SortingMap[key]);
+    sortTemplate += `<option ${sorting === key ? 'selected' : ''} value="${key}">${SortingMap[key].name}</option>`;
+  }
+  sortTemplate += '</select>';
+
   renderBlock(
     'search-results-block',
     `
@@ -104,11 +110,9 @@ export function renderSearchResultsBlock(data: Place[]): void {
         <p>Результаты поиска</p>
         <div class="search-results-filter">
             <span><i class="icon icon-filter"></i> Сортировать:</span>
-            <select>
-                <option selected="">Сначала дешёвые</option>
-                <option selected="">Сначала дорогие</option>
-                <option>Сначала ближе</option>
-            </select>
+            
+                ${sortTemplate}
+            
         </div>
     </div>
     <ul class="results-list">
@@ -122,5 +126,12 @@ export function renderSearchResultsBlock(data: Place[]): void {
       renderSearchResultsBlock(data);
       renderUserInfo();
     });
+  });
+  document.querySelector('.search-results-filter select')?.addEventListener('change', (e) => {
+    e.preventDefault();
+    const el = <HTMLInputElement>e.target;
+    localStorage.setItem('sorting', el.value);
+    const form = <HTMLFormElement>document.getElementById('form');
+    form.querySelector('button')?.click();
   });
 }
