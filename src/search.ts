@@ -14,8 +14,6 @@ import {
 
 import { FlatRentSdk, iFlat, iParams } from './sdk/flat-rent-sdk.js';
 
-
-
 export class HomyProvider implements Provider {
 
   public static provider = 'homy';
