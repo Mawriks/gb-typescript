@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "restore-data": "copy /Y .\\data\\db.backup.json .\\data\\db.json",
-    "start": "npm run restore-data && SET TZ=UTC nodemon .\\dist\\index.js --watch"
+    "start": "npm run restore-data && SET TZ=UTC && nodemon ./dist/index.js --watch"
   },
   "dependencies": {
     "@feathersjs/express": "^4.5.11",

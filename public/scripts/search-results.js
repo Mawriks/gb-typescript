@@ -1,5 +1,6 @@
 import { renderBlock } from './lib.js';
 import { renderUserInfo } from './user.js';
+import { SortingMap } from './search.js';
 export function renderSearchStubBlock() {
     renderBlock('search-results-block', `
     <div class="before-results-block">
@@ -47,6 +48,7 @@ export function renderEmptyOrErrorSearchBlock(reasonMessage) {
     `);
 }
 export function renderSearchResultsBlock(data) {
+    var _a;
     const result = data.map((item) => {
         let classStr;
         inFavorite(item) ? (classStr = 'active') : (classStr = '');
@@ -72,16 +74,22 @@ export function renderSearchResultsBlock(data) {
     </div>
   </li>`;
     });
+    const sorting = localStorage.getItem('sorting');
+    const sortKeys = Object.keys(SortingMap);
+    let sortTemplate = '<select>';
+    for (const key of sortKeys) {
+        console.log(SortingMap[key]);
+        sortTemplate += `<option ${sorting === key ? 'selected' : ''} value="${key}">${SortingMap[key].name}</option>`;
+    }
+    sortTemplate += '</select>';
     renderBlock('search-results-block', `
     <div class="search-results-header">
         <p>Результаты поиска</p>
         <div class="search-results-filter">
             <span><i class="icon icon-filter"></i> Сортировать:</span>
-            <select>
-                <option selected="">Сначала дешёвые</option>
-                <option selected="">Сначала дорогие</option>
-                <option>Сначала ближе</option>
-            </select>
+            
+                ${sortTemplate}
+            
         </div>
     </div>
     <ul class="results-list">
@@ -94,5 +102,13 @@ export function renderSearchResultsBlock(data) {
             renderSearchResultsBlock(data);
             renderUserInfo();
         });
+    });
+    (_a = document.querySelector('.search-results-filter select')) === null || _a === void 0 ? void 0 : _a.addEventListener('change', (e) => {
+        var _a;
+        e.preventDefault();
+        const el = e.target;
+        localStorage.setItem('sorting', el.value);
+        const form = document.getElementById('form');
+        (_a = form.querySelector('button')) === null || _a === void 0 ? void 0 : _a.click();
     });
 }

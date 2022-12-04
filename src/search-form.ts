@@ -1,52 +1,29 @@
 import {
   renderBlock,
   getISODate,
-  getLastDayOfMonth,
-  dateToUnixStamp,
-  responseToJson,
-  calculateDifferenceInDays
+  getLastDayOfMonth
 } from './lib.js';
+
+import {
+  SearchFormData,
+  Place
+} from './app-types';
+
+import { HomyProvider, FlatRentProvider, SortingMap } from './search.js';
 import { renderSearchResultsBlock } from './search-results.js';
-import { FlatRentSdk, iFlat, iParams } from './sdk/flat-rent-sdk.js';
 
-export const flatSDK = new FlatRentSdk();
-
-interface SearchFormData {
-  city: string;
-  checkin: Date;
-  checkout: Date;
-  maxprice: number | null;
-  coordinates: string;
-}
-export interface Place {
-  id: number | string;
-  image: string;
-  name: string;
-  description: string;
-  remoteness?: number;
-  bookedDates: number[];
-  price: number;
-}
-
-export function getFormData(): void {
-  const form = document.getElementById('form') as HTMLFormElement;
+export function getFormData(): HTMLFormElement {
+  const form = <HTMLFormElement>document.getElementById('form');
   form.addEventListener('submit', (e: SubmitEvent) => {
     e.preventDefault();
-    const city: HTMLInputElement = document.getElementById(
-      'city'
-    ) as HTMLInputElement,
-      checkin: HTMLInputElement = document.getElementById(
-        'check-in-date'
-      ) as HTMLInputElement,
-      checkout: HTMLInputElement = document.getElementById(
-        'check-out-date'
-      ) as HTMLInputElement,
-      maxprice: HTMLInputElement = document.getElementById(
-        'max-price'
-      ) as HTMLInputElement,
-      coordinates: HTMLInputElement = document.getElementById(
-        'coordinates'
-      ) as HTMLInputElement;
+
+    const city = <HTMLInputElement>document.getElementById('city'),
+      checkin = <HTMLInputElement>document.getElementById('check-in-date'),
+      checkout = <HTMLInputElement>document.getElementById('check-out-date'),
+      maxprice = <HTMLInputElement>document.getElementById('max-price'),
+      coordinates = <HTMLInputElement>document.getElementById('coordinates');
+
+
     const data: SearchFormData = {
       city: city.value,
       checkin: new Date(checkin.value),
@@ -54,48 +31,22 @@ export function getFormData(): void {
       maxprice: maxprice.value ? +maxprice.value : null,
       coordinates: coordinates.value,
     };
-    const sdkData:iParams = {
-      city: city.value,
-      checkInDate: new Date(checkin.value),
-      checkOutDate: new Date(checkout.value),
-      priceLimit: maxprice.value ? +maxprice.value : null
-    }
-    
-    search(data).then((places: Place[]) =>{ 
-      places = places.map((place:Place)=>{
-        place.price = place.price*calculateDifferenceInDays(data.checkin, data.checkout);
-        return place;
-      });
-      flatSDK.search(sdkData).then((sdkpl:iFlat[]) => {
-        const sdkPlaces:Place[] = sdkpl.map((flat:iFlat)=>{
-          return {
-            id: flat.id,
-            name: flat.title,
-            image: flat.photos[0],
-            description: flat.details,
-            price: flat.totalPrice,
-          } as Place;
-        });
-        places.push(...sdkPlaces);
-        renderSearchResultsBlock(places);
-      });
+
+    const homySearch = new HomyProvider();
+    const flatSearch = new FlatRentProvider();
+
+    Promise.all([
+      homySearch.find(data),
+      flatSearch.find(data)
+    ]).then((results) => {
+      const sorting = localStorage.getItem('sorting');
+      const allResults: Place[] = [...results[0], ...results[1]];
+      allResults.sort(SortingMap[sorting ? sorting : 'asc'].fnc);
+      renderSearchResultsBlock(allResults);
     });
   });
+  return form;
 }
-function search(data: SearchFormData) {
-  let url: string =
-    'http://localhost:3030/places?' +
-    `checkInDate=${dateToUnixStamp(data.checkin)}&` +
-    `checkOutDate=${dateToUnixStamp(data.checkout)}&` +
-    `coordinates=${data.coordinates}`;
-
-  if (data.maxprice != null) {
-    url += `&maxPrice=${data.maxprice}`;
-  }
-
-  return responseToJson(fetch(url));
-}
-
 export function renderSearchFormBlock(checkin = '', checkout = ''): void {
   const minDate = new Date(),
     maxDate = new Date(),
@@ -118,26 +69,18 @@ export function renderSearchFormBlock(checkin = '', checkout = ''): void {
             <input type="hidden" id="coordinates" name="coordinates" disabled value="59.9386,30.3141" />
           </div>
           <!--<div class="providers">
-            <label><input type="checkbox" name="provider" value="homy" checked /> Homy</label>
-            <label><input type="checkbox" name="provider" value="flat-rent" checked /> FlatRent</label>
-          </div>--!>
+            <label><input type="checkbox" name="provider[]" value="homy" checked /> Homy</label>
+            <label><input type="checkbox" name="provider[]" value="flat-rent" checked /> FlatRent</label>
+          </div>-->
         </div>
         <div class="row">
           <div>
             <label for="check-in-date">Дата заезда</label>
-            <input id="check-in-date" type="date" value="${
-  checkin ? checkin : getISODate(checkinDefaultDate)
-}" min="${getISODate(minDate)}" max="${getISODate(
-  maxDate
-)}" name="checkin" />
+            <input id="check-in-date" type="date" value="${checkin ? checkin : getISODate(checkinDefaultDate)}" min="${getISODate(minDate)}" max="${getISODate(maxDate)}" name="checkin" />
           </div>
           <div>
             <label for="check-out-date">Дата выезда</label>
-            <input id="check-out-date" type="date" value="${
-  checkout ? checkout : getISODate(checkoutDefaultDate)
-}" min="${getISODate(minDate)}" max="${getISODate(
-  maxDate
-)}" name="checkout" />
+            <input id="check-out-date" type="date" value="${checkout ? checkout : getISODate(checkoutDefaultDate)}" min="${getISODate(minDate)}" max="${getISODate(maxDate)}" name="checkout" />
           </div>
           <div>
             <label for="max-price">Макс. цена суток</label>
