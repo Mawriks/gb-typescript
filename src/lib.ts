@@ -1,6 +1,6 @@
 import { IMessage, IAction } from './app-types';
 
-export function renderBlock(elementId: string, html: string) {
+export function renderBlock(elementId: string, html: string): void {
   const element = document.getElementById(elementId) as HTMLElement;
   element.innerHTML = html;
 }
@@ -50,7 +50,7 @@ export function getLastDayOfMonth(year: number, month: number): number {
   return date.getDate();
 }
 
-export function renderToast(message: IMessage | null, action: IAction | null) {
+export function renderToast(message: IMessage | null, action: IAction | null): void {
   let messageText = '';
 
   if (message != null) {
