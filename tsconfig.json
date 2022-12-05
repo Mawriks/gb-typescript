@@ -1,4 +1,5 @@
 {
+  "extends": "./tsconfig-check.json",
   "compilerOptions": {
     "target": "es2015",
     "module": "es2015",
@@ -8,7 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "watch": true,
+    "watch": false,
     "outDir": "public/scripts",
     "resolveJsonModule": true,
     "allowJs": true,

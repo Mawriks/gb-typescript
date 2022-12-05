@@ -52,9 +52,7 @@ export function renderUserBlock(
       <div class="info">
           <p class="name">${name}</p>
           <p class="fav">
-            <i class="heart-icon${
-  hasFavoriteItems ? ' active' : ''
-}"></i>${favoritesCaption}
+            <i class="heart-icon${hasFavoriteItems ? ' active' : ''}"></i>${favoritesCaption}
           </p>
       </div>
     </div>
@@ -62,7 +60,7 @@ export function renderUserBlock(
   );
 }
 
-export function renderUserInfo():void{
+export function renderUserInfo(): void {
   const user = getUserData();
   const userFavorites = getFavoritesAmount();
   if (user instanceof User && typeof userFavorites === 'number') {
